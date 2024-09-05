@@ -4,22 +4,6 @@
     <meta charset="UTF-8">
     <title>Chat with PDF</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        /* Additional CSS for the progress bar */
-        .progress-container {
-            width: 100%;
-            background-color: #f3f3f3;
-            margin-top: 10px;
-            display: none;
-        }
-
-        .progress-bar {
-            width: 0%;
-            height: 20px;
-            background-color: #4caf50;
-            transition: width 0.4s ease;
-        }
-    </style>
 </head>
 <body>
     <div class="chat-container">
@@ -29,16 +13,17 @@
 
         <div class="upload-container">
             <input type="file" id="file-input" />
-            <label for="file-input">Choose a file</label>
+            <label for="file-input">Upload a PDF</label>
         </div>
 
         <div class="progress-container">
-            <div class="progress-bar" id="progress-bar"></div>
+            <progress id="progress-bar"></progress>
         </div>
 
         <div class="chat-log" id="chat-log"></div>
 
         <div class="chat-input">
+            <label for="question-input"></label>
             <input type="text" id="question-input" placeholder="Type your question here..." />
             <button id="send-button">Send</button>
         </div>
@@ -61,28 +46,18 @@
             const formData = new FormData();
             formData.append('file', file);
 
-            const progressBar = document.getElementById('progress-bar');
             const progressContainer = document.querySelector('.progress-container');
-            progressContainer.style.display = 'block';
+            progressContainer.style.display = 'flex';
 
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '/upload', true);
 
-            xhr.upload.onprogress = function(event) {
-                if (event.lengthComputable) {
-                    const percentComplete = (event.loaded / event.total) * 100;
-                    progressBar.style.width = percentComplete + '%';
-                }
-            };
-
             xhr.onloadstart = function() {
-                progressBar.style.width = '0%';
-                progressContainer.style.display = 'block';
+                progressContainer.style.display = 'flex';
             };
 
             xhr.onload = function() {
                 if (xhr.status === 200) {
-                    progressBar.style.width = '100%';
                     const response = JSON.parse(xhr.responseText);
                     if (response.error) {
                         alert(`Error: ${response.error}`);

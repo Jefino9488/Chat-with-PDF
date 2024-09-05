@@ -108,7 +108,6 @@ body {
     color: white;
     border-radius: 5px;
     font-size: 16px;
-    margin-bottom: 10px;
     transition: background-color 0.3s ease;
 }
 
@@ -131,5 +130,14 @@ body {
     background-color: #218838;
 }
 
+.progress-container {
+    display: none;
+    align-content: center;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: 10px;
+}
 
-
+#progress-bar {
+    width: 80%;
+}

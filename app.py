@@ -1,7 +1,8 @@
 import os
+import chromadb
 import warnings
+from chromadb import Settings
 from dotenv import load_dotenv
-import google.generativeai as genai
 from langchain.chains import RetrievalQA
 from werkzeug.utils import secure_filename
 from langchain_core.prompts import PromptTemplate
@@ -19,6 +20,10 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+CHROMA_DB_DIR = 'db/chroma'
+
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(CHROMA_DB_DIR, exist_ok=True)
 
 
 def allowed_file(filename):
@@ -35,8 +40,15 @@ def process_pdf(pdf_path):
         model="models/embedding-001",
         google_api_key=os.getenv('GOOGLE_API_KEY')
     )
-    vectors = Chroma.from_texts(chunks, embeddings).as_retriever(search_kwargs={"k": 5})
-    return vectors
+
+    client = chromadb.PersistentClient(path="./path/to/chroma", settings=Settings(allow_reset=True))
+    client.reset()
+
+    vector = Chroma.from_texts(
+        chunks, embeddings, client=client
+    ).as_retriever(search_kwargs={"k": 5})
+
+    return vector
 
 
 vector_store = None
@@ -58,8 +70,6 @@ def initialize_qa_chain():
         chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
     )
 
-
-genai.configure(api_key=os.getenv('GENAI_API_KEY'))
 
 model = ChatGoogleGenerativeAI(
     model="gemini-pro",
@@ -124,9 +134,6 @@ def upload_file():
             if os.path.isfile(old_file_path):
                 os.remove(old_file_path)
 
-        if not os.path.exists(app.config['UPLOAD_FOLDER']):
-            os.makedirs(app.config['UPLOAD_FOLDER'])
-
         file.save(file_path)
         vector_store = process_pdf(file_path)
         qa_chain = initialize_qa_chain()
@@ -136,6 +143,4 @@ def upload_file():
 
 
 if __name__ == '__main__':
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
     app.run(debug=True)
