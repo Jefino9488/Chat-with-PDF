@@ -1,6 +1,6 @@
 # Chat With `PDFs`
 
-This project is a Flask-based web application that allows users to upload PDF files, extract the text from them, and perform a question-answering process using Google Generative AI and Chroma for vector-based retrieval. The system includes a user-friendly HTML interface for easy interaction.
+This project is a Flask-based web application that allows users to upload PDF files, extract the text from them, and perform a question-answering process using Google Generative AI and Chroma for vector-based retrieval.
 
 ## Features
 
